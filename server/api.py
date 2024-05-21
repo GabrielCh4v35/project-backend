@@ -31,13 +31,14 @@ class ServerApi:
 
             # Obtendo os dados enviados como JSON
             data = request.json
+            user_id = data.get('user_id')
             complete_name = data.get('complete_name')
             email = data.get('email')
             password_hash = data.get('password')
             password_hash = self.encrypt_password(password_hash)
             
             # Gerando Tokens JWT
-            access_token = jwt.encode({'email': email, 'exp': datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(hours=1)}, secret_key)
+            access_token = jwt.encode({'user_id': user_id, 'email': email, 'exp': datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(hours=1)}, secret_key)
 
 
             try:
@@ -100,7 +101,7 @@ class ServerApi:
             # Obtendo dados do formulário de METAS
 
             data = request.json
-            id_user = 1
+            user_id = data.get('user_id')
             metric_name = request.form.get('metric_name')
             unit_measurement = request.form.get('unit_measurement')
 
@@ -109,11 +110,11 @@ class ServerApi:
                 cursor = self.connector.connection.cursor()
                 query = ("INSERT INTO METRICS (USER_ID, METRIC_NAME, UNIT_MEASUREMENT) "
                          "VALUES (%s, %s, %s)")
-                data = (id_user, metric_name, unit_measurement)
+                data = (user_id, metric_name, unit_measurement)
                 cursor.execute(query, data)
                 self.connector.connection.commit()
                 cursor.close()
-                resposta = {"metric_name": metric_name, "unit_measurement": unit_measurement}
+                resposta = {"user_id": user_id, "metric_name": metric_name, "unit_measurement": unit_measurement}
 
                 return jsonify(resposta)
             
@@ -126,7 +127,7 @@ class ServerApi:
         def add_metric_input():
             # Obtendo dados do formulário
             metric_id = request.form.get('metric_id')
-            user_id = request.form.get('user_id')
+            user_id = data.get('user_id')
             input_value = request.form.get('input_value')
 
             # Inserindo os dados na tabela METRICS_INPUT
@@ -147,6 +148,7 @@ class ServerApi:
                 cursor.close()
 
                 resposta = {
+                    "user_id": user_id,
                     "metric_name": metric_name,
                     "input_value": input_value
                 }
